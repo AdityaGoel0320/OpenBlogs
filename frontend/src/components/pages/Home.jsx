@@ -1,14 +1,12 @@
-import React, { useContext, useState } from "react";
-import LatestBlogs from "../miniComponents/LatestBlogs";
-import HeroSection from "../miniComponents/HeroSection";
-import TrendingBlogs from "../miniComponents/TrendingBlogs";
+import { useContext } from "react";
+import StoryGrid from "../miniComponents/StoryGrid";
+import FeaturedStory from "../miniComponents/FeaturedStory";
 import PopularAuthors from "../miniComponents/PopularAuthors";
 import { Context } from "../../main";
-import NewLetter from "../miniComponents/NewLetter";
+import ContactBand from "../miniComponents/ContactBand";
 
 const Home = () => {
-  const { mode, blogs } = useContext(Context);
-  const filteredBlogs = blogs.slice(0, 6);
+  const { mode } = useContext(Context);
   return (
 
     <>
@@ -16,12 +14,12 @@ const Home = () => {
 
       <article className={mode === "dark" ? "dark-bg" : "light-bg"}>
 
-        <HeroSection />
+        <FeaturedStory />
         {/* <TrendingBlogs /> */}
-        <LatestBlogs heading={"Latest Blogs"} blogs={filteredBlogs} />
+        <StoryGrid />
         <PopularAuthors />
 
-        <NewLetter />
+        <ContactBand />
       </article>
     </>
   );

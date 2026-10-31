@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
+import "./theme.css";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 
@@ -10,7 +11,12 @@ const AppWrapper = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState({});
   const [blogs, setBlogs] = useState([]);
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState(() => localStorage.getItem("openblogs-theme") || "light");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = mode;
+    localStorage.setItem("openblogs-theme", mode);
+  }, [mode]);
 
   return (
     <Context.Provider

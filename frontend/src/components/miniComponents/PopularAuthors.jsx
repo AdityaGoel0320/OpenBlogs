@@ -1,61 +1,42 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { BackendUrl } from "../../assets/FrontendUtils";
-import { NavLink } from "react-router-dom";
 
 const PopularAuthors = () => {
   const [authors, setAuthors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    let active = true;
     const fetchAuthors = async () => {
-      let url = `${BackendUrl}/api/v1/user/authors`
-      const { data } = await axios.get(
-        url,
-        { withCredentials: true }
-      );
-      setAuthors(data.authors);
+      try {
+        const { data } = await axios.get(`${BackendUrl}/api/v1/user/authors`, { withCredentials: true });
+        if (active) setAuthors(data.authors || []);
+      } catch {
+        if (active) setAuthors([]);
+      } finally {
+        if (active) setLoading(false);
+      }
     };
+
     fetchAuthors();
+    return () => { active = false; };
   }, []);
-  return (
-    <section className="popularAuthors">
-      <h3 className="font-bold text-center text-3xl mt-12 uppercase">Popular Authors</h3>
 
-      <div className="flex justify-center items-center flex-wrap p-4">
-        {authors && authors.length > 0 ? (
-          authors.slice(0, 4).map((element, index) => {
-            return (
-              <>
-
-                <div key={element._id} className={`author-card animation-${index + 1} m-4 p-2 rounded-xl overflow-hidden transform transition duration-500 hover:scale-105`}>
-                  <img className="h-24 w-24  border-black border-4  rounded-full mx-auto" src={element.avatar.url} alt="author" />
-                  <p className="font-bold text-center mt-2">{element.name}</p>
-                  <p className="font-bold text-center mt-2 bg-yellow-400 border-2 border-black rounded-lg">
-                  <NavLink to={`/author/${element._id}`}>
-
-                  See profile
-                  </NavLink>
-                  </p>
-
-                </div>
-
-
-             
-
-
-                
-
-              </>
-            );
-          })
-        ) : (
-          <div className="flex justify-center items-center mt-8">
-            <BeatLoader color="gray" size={30} />
-          </div>
-        )}
-      </div>
-    </section>
-  );
+  return <section className="popularAuthors">
+    <div className="section-heading">
+      <div><span className="section-kicker">People behind the pages</span><h2>Meet the writers</h2></div>
+      <Link className="text-link" to="/authors">All writers <span aria-hidden="true">↗</span></Link>
+    </div>
+    {authors.length > 0 && <div className="author-grid">{authors.slice(0, 4).map((author) => <article className="author-card" key={author._id}>
+      <img src={author.avatar?.url} alt="" loading="lazy" />
+      <h3>{author.name}</h3>
+      <Link className="author-profile-link" to={`/author/${author._id}`}>View profile <span aria-hidden="true">↗</span></Link>
+    </article>)}</div>}
+    {loading && <p className="author-status" role="status">Finding writers...</p>}
+    {!loading && authors.length === 0 && <p className="empty-state">Writer profiles will appear here as the community grows.</p>}
+  </section>;
 };
 
 export default PopularAuthors;

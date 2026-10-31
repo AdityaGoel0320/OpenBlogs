@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaLinkedinIn, FaTwitter, FaGithub, FaEnvelope } from "react-icons/fa";
 import { Context } from "../../main";
@@ -7,7 +7,7 @@ import { AppName, Email, FrontendUrl, Github, LinkedIn, Phone, Twitter } from ".
 const Footer = () => {
   let url = `${FrontendUrl}/dashboard`
   const isDashboard = useLocation(url);
-  const { mode, setMode } = useContext(Context);
+  const { mode } = useContext(Context);
 
   return (
     <footer
@@ -53,13 +53,10 @@ const Footer = () => {
           </div>
           <div className="w-full md:w-1/4">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Weekly Newsletter</h3>
-              <p className="text-sm">Get blog articles and offers via email</p>
+              <h3 className="text-lg font-semibold mb-2">Say hello</h3>
+              <p className="text-sm">Have an idea or a question for the OpenBlogs team?</p>
             </div>
-            <div className="flex">
-              <input type="text" placeholder="Your Email" className="border border-gray-300 rounded-l px-2 py-1 focus:outline-none focus:border-blue-400" />
-              <button className="bg-blue-500 text-white px-4 py-1 rounded-r hover:bg-blue-600 transition duration-300">Subscribe</button>
-            </div>
+            <a className="text-sm font-semibold" href={`mailto:${Email}`}>Get in touch <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <div className="mt-8 flex justify-between items-center">

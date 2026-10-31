@@ -3,7 +3,7 @@ export const AppName = "OpenBlogs"
 // export const BackendUrl = "http://localhost:7777"
 // export const FrontendUrl = "http://localhost:5173"
 
-export const BackendUrl = "https://openblogs-a-place-to-share-your-thoughts.onrender.com"
+export const BackendUrl = import.meta.env.VITE_API_URL || "https://openblogs-a-place-to-share-your-thoughts.onrender.com"
 export const FrontendUrl = "https://open-blogs-a-place-to-share-your-thoughts-mern-cloudinary.vercel.app"
 
 
