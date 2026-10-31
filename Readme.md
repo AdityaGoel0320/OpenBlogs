@@ -30,17 +30,18 @@ npm install
 npm start
 ```
 
-The API reads its configuration from `backend/config/config.env` (relative to the backend working directory). Create that file with:
+The API reads its configuration from `backend/.env`. Create that file with:
 
 ```dotenv
-PORT=7777
+PORT=7000
 FRONTEND_URL=http://localhost:5173
+FRONTEND_URLS=https://open-blogs-a-place-to-share-your-thoughts-mern-cloudinary.vercel.app
 MONGO_URI=mongodb://127.0.0.1:27017/openblogs
-CLOUDINARY_CLIENT_NAME=your_cloud_name
-CLOUDINARY_CLIENT_API=your_cloudinary_api_key
-CLOUDINARY_CLIENT_SECRET=your_cloudinary_api_secret
-JWT_SECRET_KEY=replace_with_a_long_random_secret
-JWT_EXPIRES=7d
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+JWT_SECRET=replace_with_a_long_random_secret
+JWT_EXPIRE=7d
 COOKIE_EXPIRE=7
 ```
 
@@ -51,7 +52,7 @@ cd frontend
 npm install
 ```
 
-Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL=http://localhost:7777`, then run:
+Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL=http://localhost:7000`, then run:
 
 ```bash
 npm run dev
@@ -74,7 +75,7 @@ Run the API from `backend/` with `npm start`.
 
 ## Deployment configuration
 
-Set `VITE_API_URL` in the frontend deployment environment. Set `FRONTEND_URL`, `PORT`, `MONGO_URI`, Cloudinary credentials, and JWT/cookie settings in the backend environment file or hosting provider. Configure CORS to allow the exact deployed frontend origin and serve the frontend over HTTPS when using cookie authentication.
+Set `VITE_API_URL` in the frontend deployment environment to the deployed API URL. Set `FRONTEND_URLS` (a comma-separated list of exact frontend origins), `PORT`, `MONGO_URI`, Cloudinary credentials, and JWT/cookie settings in the backend environment or hosting provider. Cross-site authentication cookies require HTTPS in production.
 
 ## Project layout
 
@@ -82,5 +83,3 @@ Set `VITE_API_URL` in the frontend deployment environment. Set `FRONTEND_URL`, `
 backend/   Express API, MongoDB models, authentication, and blog/user routes
 frontend/  React application, routes, UI components, and Tailwind styles
 ```
-
-

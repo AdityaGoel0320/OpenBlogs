@@ -1,9 +1,14 @@
 export const AppName = "OpenBlogs"
 
-// export const BackendUrl = "http://localhost:7777"
+const localBackendUrl = "http://localhost:7000";
+const productionBackendUrl =
+  "https://openblogs-a-place-to-share-your-thoughts.onrender.com";
+export const BackendUrl = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? productionBackendUrl : localBackendUrl)
+).replace(/\/+$/, "");
 // export const FrontendUrl = "http://localhost:5173"
 
-export const BackendUrl = import.meta.env.VITE_API_URL || "https://openblogs-a-place-to-share-your-thoughts.onrender.com"
 export const FrontendUrl = "https://open-blogs-a-place-to-share-your-thoughts-mern-cloudinary.vercel.app"
 
 
@@ -28,4 +33,3 @@ export const LinkedInImg = "./Images/linkedIn.png";
 export const TwitterImg = "./Images/Twitter.png";
 export const GithubImg = "./Images/Github.jpg";
 export const ResumeLink = "https://drive.google.com/file/d/1pQChUlYbHis4kr0NGlJuv6ix2sG4efcM/view?usp=sharing";
-

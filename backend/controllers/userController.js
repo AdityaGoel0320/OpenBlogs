@@ -5,49 +5,75 @@ import { sendToken } from "../utils/jwtToken.js";
 import cloudinary from "cloudinary";
 
 export const register = catchAsyncErrors(async (req, res, next) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return next(new ErrorHandler("User Avatar Required!", 400));
+  const avatar = req.files?.avatar;
+  if (!avatar || Array.isArray(avatar)) {
+    return next(new ErrorHandler("Choose one profile photo to continue.", 400));
   }
-  const { avatar } = req.files;
+  if (avatar.truncated || avatar.size > 5 * 1024 * 1024) {
+    return next(new ErrorHandler("Your profile photo must be 5 MB or smaller.", 413));
+  }
+
   const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
   if (!allowedFormats.includes(avatar.mimetype)) {
     return next(
       new ErrorHandler(
-        "Invalid file type. Please provide your avatar in png, jpg or webp format.",
+        "Choose a JPG, PNG, or WebP image for your profile photo.",
         400
       )
     );
   }
   const { name, email, password, phone, role, education } = req.body;
   if (
-    !name ||
-    !email ||
+    typeof name !== "string" ||
+    !name.trim() ||
+    typeof email !== "string" ||
+    !email.trim() ||
+    typeof password !== "string" ||
     !password ||
     !phone ||
     !role ||
-    !education ||
-    !avatar
+    !education
   ) {
-    return next(new ErrorHandler("Please fill full details!", 400));
+    return next(new ErrorHandler("Complete all required account details.", 400));
   }
-  let user = await User.findOne({ email });
-  if (user) {
-    return next(new ErrorHandler("User already existes", 400));
+  if (!["Reader", "Author"].includes(role)) {
+    return next(new ErrorHandler("Choose Reader or Author as your account role.", 400));
+  }
+  if (!/^\d{7,15}$/.test(String(phone))) {
+    return next(new ErrorHandler("Enter a phone number containing 7 to 15 digits.", 400));
+  }
+  if (password.length < 8 || password.length > 32) {
+    return next(new ErrorHandler("Your password must be between 8 and 32 characters.", 400));
   }
 
-  const cloudinaryResponse = await cloudinary.uploader.upload(
-    avatar.tempFilePath
-  );
-  if (!cloudinaryResponse || cloudinaryResponse.error) {
-    console.error(
-      "Cloudinary error:",
-      cloudinaryResponse.error || "Unknown cloudinary error!"
+  const normalizedEmail = email.trim().toLowerCase();
+  let user = await User.findOne({ email: normalizedEmail });
+  if (user) {
+    return next(new ErrorHandler("An account with this email already exists.", 409));
+  }
+
+  let cloudinaryResponse;
+  try {
+    cloudinaryResponse = await cloudinary.uploader.upload(avatar.tempFilePath, {
+      folder: "openblogs/avatars",
+      resource_type: "image",
+    });
+  } catch (error) {
+    console.error("Avatar image upload failed:", error.message);
+    return next(
+      new ErrorHandler("We couldn't upload your photo. Please try again in a moment.", 502)
+    );
+  }
+  if (!cloudinaryResponse?.secure_url || !cloudinaryResponse.public_id) {
+    console.error("Avatar image upload failed: Cloudinary returned no image.");
+    return next(
+      new ErrorHandler("We couldn't save your photo. Please try again in a moment.", 502)
     );
   }
 
   user = await User.create({
-    name,
-    email,
+    name: name.trim(),
+    email: normalizedEmail,
     password,
     phone,
     role,
@@ -62,10 +88,10 @@ export const register = catchAsyncErrors(async (req, res, next) => {
 
 export const login = catchAsyncErrors(async (req, res, next) => {
   const { email, password, role } = req.body;
-  if (!email || !password || !role) {
-    return next(new ErrorHandler("Please fill full form!", 400));
+  if (typeof email !== "string" || !email.trim() || !password || !role) {
+    return next(new ErrorHandler("Enter your email, password, and account role.", 400));
   }
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email: email.trim().toLowerCase() }).select("+password");
   if (!user) {
     return next(new ErrorHandler("Invalid email or password!", 400));
   }
@@ -75,7 +101,10 @@ export const login = catchAsyncErrors(async (req, res, next) => {
   }
   if (user.role !== role) {
     return next(
-      new ErrorHandler(`User with provided role(${role}) not found`, 400)
+      new ErrorHandler(
+        `This account is registered as ${user.role}. Choose the matching role to sign in.`,
+        400
+      )
     );
   }
   sendToken(user, 200, "User logged in successfully", res);
@@ -85,23 +114,16 @@ export const login = catchAsyncErrors(async (req, res, next) => {
 
 export const logout = (req, res, next) => {
   try {
-    console.log("Backend logout function running");
-
-    // Clear the "token" cookie
-    res.clearCookie("token", { path: "/" });
-
-    // Send a success response
-    res.status(200).send("User logged out from the app!");
-
-
-    console.log("Backend logout function running and cookie is removed");
-
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("token", {
+      path: "/",
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+    res.status(200).json({ success: true, message: "You have been signed out." });
   } catch (error) {
-    // If an error occurs, log it to the terminal
-    console.error("Error during logout:", error);
-
-    // Send an error response
-    res.status(500).send("An error occurred during logout");
+    next(error);
   }
 };
 
