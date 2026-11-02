@@ -1,87 +1,41 @@
-import React, { useEffect, useState } from "react";
-import LatestBlogs from "./LatestBlogs";
+import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { FiArrowUpRight, FiEdit3, FiFileText, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { BackendUrl } from "../../assets/FrontendUtils";
+import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 
-const MyBlogs = () => {
-  const [myBlogs, setMyBlogs] = useState([]);
-
+export default function MyBlogs({ blogs, onDeleted, compact = false }) {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const dialog = useRef(null);
   useEffect(() => {
-    const fetchMyBlogs = async () => {
-      let url = `${BackendUrl}/api/v1/blog/myblogs`;
-      const { data } = await axios.get(url, { withCredentials: true });
-      setMyBlogs(data.blogs);
-    };
-    fetchMyBlogs();
-  }, []);
-
-  const deleteBlogHandler = async (id) => {
-    let url = `${BackendUrl}/api/v1/blog/delete/${id}`;
-    await axios
-      .delete(url, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        toast.success(res.data.message);
-        setMyBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== id));
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
-  };
-
+    if (selected) dialog.current.showModal();
+  }, [selected]);
+  const filtered = blogs.filter((blog) => (filter === "all" || (filter === "published" ? blog.published : !blog.published)) && `${blog.title} ${blog.category}`.toLowerCase().includes(search.toLowerCase()));
+  async function deleteBlog() {
+    setDeleting(true);
+    try {
+      const { data } = await axios.delete(`${BackendUrl}/api/v1/blog/delete/${selected._id}`, { withCredentials: true });
+      onDeleted(selected._id);
+      toast.success(data.message);
+      setSelected(null);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "We couldn't delete this story. Please try again."));
+    } finally {
+      setDeleting(false);
+    }
+  }
   return (
-    <>
-
-      <>
-        <h3 className="font-bold text-center text-3xl m-4 uppercase">MY BLOG</h3>
-
-        <section className=" m-4 p-4 my-blogs grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-
-
-
-
-          {myBlogs && myBlogs.length > 0 ? (
-            myBlogs.map((element) => (
-              <>
-
-                <div className=" shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.1),_10px_10px_30px_4px_rgba(45,78,255,0.15)] hover:shadow-[5px_5px_rgba(0,_98,_90,_0.4),_10px_10px_rgba(0,_98,_90,_0.3),_15px_15px_rgba(0,_98,_90,_0.2),_20px_20px_rgba(0,_98,_90,_0.1),_25px_25px_rgba(0,_98,_90,_0.05)] author-blog-card bg-white p-4 rounded-lg " key={element._id}>
-                  {element.mainImage && element.mainImage && (
-                    <img src={element.mainImage.url} alt="blogImg" className="w-full h-48 object-cover mb-4 rounded" />
-                  )}
-                  <span className="category bg-blue-500 text-white px-2 py-1 rounded-md inline-block mb-2">{element.category}</span>
-                  <h4 className="text-xl font-bold mb-2">{element.title}</h4>
-                  <div className="btn-wrapper">
-                    <Link
-                      to={`/blog/update/${element._id}`}
-                      className="update-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md mr-2"
-                    >
-                      <i class="fa-regular fa-pen-to-square"></i>
-                    </Link>
-                    <button
-                      className="delete-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-                      onClick={() => deleteBlogHandler(element._id)}
-                    >
-                      <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                  </div>
-                </div>
-
-
-
-              </>
-            ))
-          ) : (
-            <p className="text-lg">You have not posted any blog!</p>
-          )}
-        </section>
-
-      </>
-
-    </>
+    <section className="studio-library" aria-label="Story library">
+      {!compact && <div className="studio-library-toolbar"><div className="studio-filters" role="group" aria-label="Filter stories">{[["all", "All stories"], ["published", "Published"], ["drafts", "Drafts"]].map(([value, label]) => <button type="button" key={value} aria-pressed={filter === value} className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{label} <span>{value === "all" ? blogs.length : blogs.filter((blog) => value === "published" ? blog.published : !blog.published).length}</span></button>)}</div><label className="studio-search"><FiSearch aria-hidden="true" /><input aria-label="Search your stories" placeholder="Search stories or topics..." value={search} onChange={(event) => setSearch(event.target.value)} /></label></div>}
+      {filtered.length ? <><div className="studio-library-label"><span>STORY</span><span>STATUS & ACTIONS</span></div><div className="studio-story-list">{filtered.map((blog) => <article key={blog._id} className="studio-story-row"><div className="studio-story-thumbnail">{blog.mainImage?.url ? <img src={blog.mainImage.url} alt="" /> : <FiFileText />}</div><div className="studio-story-copy"><span>{blog.category}</span><Link to={`/blog/update/${blog._id}`}><h3>{blog.title}</h3></Link><p>{blog.intro}</p></div><div className="studio-story-actions"><span className={`studio-status${blog.published ? " published" : ""}`}><span />{blog.published ? "Published" : "Draft"}</span><div>{blog.published && <Link className="studio-action" to={`/blog/${blog._id}`} aria-label={`Read ${blog.title}`} title="View story"><FiArrowUpRight /></Link>}<Link className="studio-action" to={`/blog/update/${blog._id}`} aria-label={`Edit ${blog.title}`} title="Edit story"><FiEdit3 /></Link><button type="button" className="studio-action studio-danger-action" onClick={() => setSelected(blog)} aria-label={`Delete ${blog.title}`} title="Delete story"><FiTrash2 /></button></div></div></article>)}</div>{!compact && <div className="studio-library-summary" role="status">Showing {filtered.length} of {blogs.length} stories</div>}</> : <div className="studio-empty"><span className="studio-empty-icon"><FiFileText aria-hidden="true" /></span><h2>{blogs.length ? "No stories match your search" : "Your story starts here"}</h2><p>{blogs.length ? "Try a different search or filter to find what you're looking for." : "Turn an idea into your first story. Save it as a draft or share it with the world."}</p>{blogs.length ? <button className="studio-button secondary" onClick={() => { setSearch(""); setFilter("all"); }}>Clear filters</button> : <Link className="studio-button" to="/dashboard?tab=create"><FiEdit3 aria-hidden="true" />Write your first story</Link>}</div>}
+      {selected && <dialog ref={dialog} className="studio-dialog" aria-labelledby="delete-title" onCancel={(event) => { event.preventDefault(); if (!deleting) setSelected(null); }}><div className="studio-dialog-content"><button className="studio-dialog-close studio-action" aria-label="Cancel deletion" disabled={deleting} onClick={() => setSelected(null)}><FiX /></button><span className="studio-empty-icon"><FiTrash2 /></span><h2 id="delete-title">Delete this story?</h2><p><strong>{selected.title}</strong> will be permanently removed. This cannot be undone.</p><div className="studio-dialog-actions"><button className="studio-button secondary" disabled={deleting} onClick={() => setSelected(null)} autoFocus>Keep story</button><button className="studio-button danger" onClick={deleteBlog} disabled={deleting}>{deleting ? "Deleting..." : "Delete story"}</button></div></div></dialog>}
+    </section>
   );
-};
-
-export default MyBlogs;
+}
+MyBlogs.propTypes = { blogs: PropTypes.array.isRequired, onDeleted: PropTypes.func.isRequired, compact: PropTypes.bool };

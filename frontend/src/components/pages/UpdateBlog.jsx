@@ -1,391 +1,46 @@
+import { useContext, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
 import { Context } from "../../main";
 import { BackendUrl } from "../../assets/FrontendUtils";
+import { getApiErrorMessage } from "../../assets/apiErrorMessage";
+import StudioLayout from "../layout/StudioLayout";
+import StoryEditor from "../miniComponents/StoryEditor";
 
-const UpdateBlog = () => {
+export default function UpdateBlog() {
   const { id } = useParams();
-  const [category, setCategory] = useState("");
-  const [mainImage, setMainImage] = useState("");
-  const [intro, setIntro] = useState("");
-  const [paraOneTitle, setParaOneTitle] = useState("");
-  const [paraOneImage, setParaOneImage] = useState("");
-  const [paraOneDescription, setParaOneDescription] = useState("");
-  const [paraTwoTitle, setParaTwoTitle] = useState("");
-  const [paraTwoImage, setParaTwoImage] = useState("");
-  const [paraTwoDescription, setParaTwoDescription] = useState("");
-  const [paraThreeTitle, setParaThreeTitle] = useState("");
-  const [paraThreeImage, setParaThreeImage] = useState("");
-  const [paraThreeDescription, setParaThreeDescription] = useState("");
-  const [mainImagePreview, setMainImagePreview] = useState("");
-  const [paraOneImagePreview, setParaOneImagePreview] = useState("");
-  const [paraTwoImagePreview, setParaTwoImagePreview] = useState("");
-  const [paraThreeImagePreview, setParaThreeImagePreview] = useState("");
-  const [title, setTitle] = useState("");
-  const [published, setPublished] = useState(true);
-
+  const { user, isAuthenticated, setBlogs } = useContext(Context);
+  const [blog, setBlog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
-    const fetchBlog = async () => {
+    if (!isAuthenticated || user.role !== "Author") return;
+    let active = true;
+    setLoading(true);
+    setError("");
+    async function load() {
       try {
-        let url = `${BackendUrl}/api/v1/blog/singleblog/${id}`
-
-        const { data } = await axios.get(
-          url,
-          { withCredentials: true }
-        );
-        setTitle(data.blog.title);
-        setIntro(data.blog.intro);
-        setCategory(data.blog.category);
-        setPublished(data.blog.published);
-        setMainImage(data.blog.mainImage.url);
-        setParaOneTitle(data.blog.paraOneTitle);
-        setParaOneDescription(data.blog.paraOneDescription);
-        data.blog.paraOneImage && setParaOneImage(data.blog.paraOneImage.url);
-        setParaTwoTitle(data.blog.paraTwoTitle);
-        setParaTwoDescription(data.blog.paraTwoDescription);
-        data.blog.paraTwoImage && setParaTwoImage(data.blog.paraTwoImage.url);
-        setParaThreeTitle(data.blog.paraThreeTitle);
-        setParaThreeDescription(data.blog.paraThreeDescription);
-        data.blog.paraThreeImage &&
-          setParaThreeImage(data.blog.paraThreeImage.url);
-      } catch (error) {
-        console.log(error);
+        const { data } = await axios.get(`${BackendUrl}/api/v1/blog/singleblog/${id}`, { withCredentials: true });
+        if (String(data.blog.createdBy) !== String(user._id)) throw new Error("You can only edit stories from your own workspace.");
+        if (active) setBlog(data.blog);
+      } catch (err) {
+        if (active) setError(err.message === "You can only edit stories from your own workspace." ? err.message : getApiErrorMessage(err, "We couldn't open this story."));
+      } finally {
+        if (active) setLoading(false);
       }
-    };
-    fetchBlog();
-  }, [id]);
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    const updatedBlog = new FormData();
-    updatedBlog.append("title", title);
-    updatedBlog.append("intro", intro);
-    updatedBlog.append("category", category);
-    console.log(published);
-    updatedBlog.append("published", published);
-    updatedBlog.append("mainImage", mainImage);
-    if (paraOneTitle && paraOneTitle.length !== 0) {
-      updatedBlog.append("paraOneTitle", paraOneTitle);
-    } else {
-      updatedBlog.append("paraOneTitle", "");
     }
-    if (paraOneDescription && paraOneDescription.length !== 0) {
-      updatedBlog.append("paraOneDescription", paraOneDescription);
-    } else {
-      updatedBlog.append("paraOneDescription", "");
-    }
-    if (paraOneImage) {
-      updatedBlog.append("paraOneImage", paraOneImage);
-    }
-    if (paraTwoTitle && paraTwoTitle.length !== 0) {
-      updatedBlog.append("paraTwoTitle", paraTwoTitle);
-    } else {
-      updatedBlog.append("paraTwoTitle", "");
-    }
-    if (paraTwoDescription && paraTwoDescription.length !== 0) {
-      updatedBlog.append("paraTwoDescription", paraTwoDescription);
-    } else {
-      updatedBlog.append("paraTwoDescription", "");
-    }
-    if (paraTwoImage) {
-      updatedBlog.append("paraTwoImage", paraTwoImage);
-    }
-    if (paraThreeTitle && paraThreeTitle.length !== 0) {
-      updatedBlog.append("paraThreeTitle", paraThreeTitle);
-    } else {
-      updatedBlog.append("paraThreeTitle", "");
-    }
-    if (paraThreeDescription && paraThreeDescription.length !== 0) {
-      updatedBlog.append("paraThreeDescription", paraThreeDescription);
-    } else {
-      updatedBlog.append("paraThreeDescription", "");
-    }
-    if (paraThreeImage) {
-      updatedBlog.append("paraThreeImage", paraThreeImage);
-    }
-
-    try {
-      let url = `${BackendUrl}/api/v1/blog/update/${id}`
-
-      const { data } = await axios.put(
-        url,
-        updatedBlog,
-        { withCredentials: true }
-      );
-      toast.success(data.message);
-    } catch (error) {
-      toast.error(error.response.data.message);
-    }
-  };
-
-  const mainImagePreviewHandler = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setMainImagePreview(reader.result);
-      setMainImage(file);
-    };
-  };
-  const paraOneImagePreviewHandler = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setParaOneImagePreview(reader.result);
-      setParaOneImage(file);
-    };
-  };
-  const paraTwoImagePreviewHandler = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setParaTwoImagePreview(reader.result);
-      setParaTwoImage(file);
-    };
-  };
-  const paraThreeImagePreviewHandler = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setParaThreeImagePreview(reader.result);
-      setParaThreeImage(file);
-    };
-  };
-
-  const { mode } = useContext(Context);
-
-  return (
-    <article className={mode === "dark" ? "dark-bg" : "light-bg"}>
-      <section className="update-blog">
-        {/* <h3>UPDATE BLOG</h3> */}
-        <h3 className="font-bold text-center text-3xl m-4 uppercase">UPDATE BLOG</h3>
-
-
-        <div className=" flex gap-4 w-full  flex-col border-black rounded-3xl p-1   justify-center items-center  ">
-
-
-          <form className="flex flex-col  border-black rounded-3xl p-1 m-1   justify-center items-center   gap-4   ">
-            {/* <div className="category-box"> */}
-            <div className=" flex justify-center item-center m-4 p-2">
-
-              <label
-                className="font-bold border-2 p-2   border-black rounded-md ">Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="font-bold border-2 p-2   border-black rounded-md "
-
-              >
-                <option value="">Select Blog Category</option>
-                <option value="Lifestyle">Lifestyle</option>
-                <option value="Technology">Technology</option>
-                <option value="Sports">Sports</option>
-                <option value="Travel">Travel</option>
-                <option value="Business">Business</option>
-                <option value="Economy">Economy</option>
-              </select>
-            </div>
-            <input
-              type="text"
-              placeholder="BLOG MAIN TITLE"
-              className="font-bold text-xl  uppercase border-2 border-black rounded-xl p-1  w-96"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
-            >
-              {/* <label>BLOG MAIN IMAGE</label> */}
-            <label className="font-bold text-2xl ">BLOG MAIN IMAGE</label>
-
-              <img
-                src={
-                  mainImagePreview
-                    ? `${mainImagePreview}` // If paraOneImage exists, use it directly
-                    : mainImage // Otherwise, use paraOneImagePreview
-                      ? `${mainImage}`
-                      : "/imgPL.webp" // If neither paraOneImage nor paraOneImagePreview exists, use an empty string
-                }
-                alt="subParaOneImg"
-                className=" border-2 border-black rounded-xl h-[60vh] w-[60vw] "
-
-              />
-              <input
-                type="file"
-                onChange={mainImagePreviewHandler}
-                style={{ border: "none" }}
- 
-              />
-            </div>
-            <textarea
-              rows="5"
-              cols={100}
-              className="w-[85vw] border-4 border-blue-500 p-4   rounded-xl "
-              placeholder="BLOG INTRO..... (Must contain at least 250 characters!)"
-              value={intro}
-              onChange={(e) => setIntro(e.target.value)}
-            />
-
-
-          <div className="sub-para   flex flex-col  items-center gap-4  justify-center m-4 ">
-
-              <input
-                type="text"
-                placeholder="Paragraph one title"
-                value={
-                  paraOneTitle && paraOneTitle.length > 0 ? paraOneTitle : ""
-                }
-                onChange={(e) => setParaOneTitle(e.target.value)}
-              className="font-bold text-xl  uppercase border-2 border-black rounded-xl p-1  w-96"
-
-              />
-              <img
-                src={
-                  paraOneImagePreview
-                    ? `${paraOneImagePreview}` // If paraOneImage exists, use it directly
-                    : paraOneImage // Otherwise, use paraOneImagePreview
-                      ? `${paraOneImage}`
-                      : "/imgPL.webp" // If neither paraOneImage nor paraOneImagePreview exists, use an empty string
-                }
-                alt="subParaOneImg"
-                className=" border-2 border-black rounded-xl h-[60vh] w-[60vw] "
-                
-              />
-              <input
-                type="file"
-                onChange={paraOneImagePreviewHandler}
-                style={{ border: "none" }}
-              />
-              <textarea
-              rows="5"
-              cols={100}
-              className="border-2 border-blue-500 text-md  p-4  w-[80vw]  rounded-xl"
-                placeholder="Blog First Sub Paragraph Comes Here..."
-                value={
-                  paraOneDescription && paraOneDescription.length > 0
-                    ? paraOneDescription
-                    : ""
-                }
-                onChange={(e) => setParaOneDescription(e.target.value)}
-              />
-            </div>
-
-            
-          <div className="sub-para   flex flex-col  items-center gap-4  justify-center m-4 ">
-
-              <input
-                type="text"
-                placeholder="Paragraph two title"
-                value={
-                  paraTwoTitle && paraTwoTitle.length > 0 ? paraTwoTitle : ""
-                }
-                onChange={(e) => setParaTwoTitle(e.target.value)}
-              className="font-bold text-xl  uppercase border-2 border-black rounded-xl p-1  w-96"
-
-              />
-              <img
-                src={
-                  paraTwoImagePreview
-                    ? `${paraTwoImagePreview}` // If paraOneImage exists, use it directly
-                    : paraTwoImage // Otherwise, use paraOneImagePreview
-                      ? `${paraTwoImage}`
-                      : "/imgPL.webp" // If neither paraOneImage nor paraOneImagePreview exists, use an empty string
-                }
-                alt="subParaOneImg"
-                className=" border-2 border-black rounded-xl h-[60vh] w-[60vw] "
-
-              />
-              <input
-                type="file"
-                onChange={paraTwoImagePreviewHandler}
-                style={{ border: "none" }}
-              />
-              <textarea
-              rows="5"
-              cols={100}
-              className="border-2 border-blue-500 text-md  p-4  w-[80vw]  rounded-xl"
-                placeholder="Blog Second Sub Paragraph Comes Here..."
-                value={
-                  paraTwoDescription && paraTwoDescription.length > 0
-                    ? paraTwoDescription
-                    : ""
-                }
-                onChange={(e) => setParaTwoDescription(e.target.value)}
-              />
-            </div>
-
-
-
-          <div className="sub-para   flex flex-col  items-center gap-4  justify-center m-4 ">
-
-              <input
-                type="text"
-                placeholder="Paragraph three title"
-                value={
-                  paraThreeTitle && paraThreeTitle.length > 0
-                    ? paraThreeTitle
-                    : ""
-                }
-                onChange={(e) => setParaThreeTitle(e.target.value)}
-              className="font-bold text-xl  uppercase border-2 border-black rounded-xl p-1  w-96"
-
-              />
-              <img
-                src={
-                  paraThreeImagePreview
-                    ? `${paraThreeImagePreview}` // If paraOneImage exists, use it directly
-                    : paraThreeImage // Otherwise, use paraOneImagePreview
-                      ? `${paraThreeImage}`
-                      : "/imgPL.webp" // If neither paraOneImage nor paraOneImagePreview exists, use an empty string
-                }
-                alt="subParaOneImg"
-                className=" border-2 border-black rounded-xl h-[60vh] w-[60vw] "
-
-              />
-              <input
-                type="file"
-                onChange={paraThreeImagePreviewHandler}
-                style={{ border: "none" }}
-              />
-              <textarea
-                rows="5"
-                cols={100}
-                className="border-2 border-blue-500 text-md  p-4  w-[80vw]  rounded-xl"
-                placeholder="Blog Third Sub Paragraph Comes Here..."
-                value={
-                  paraThreeDescription && paraThreeDescription.length > 0
-                    ? paraThreeDescription
-                    : ""
-                }
-                onChange={(e) => setParaThreeDescription(e.target.value)}
-              />
-            </div>
-            <div className="publish-box">
-              <label className="font-bold text-xl ">Published?</label>
-              <select
-                value={published === null ? "" : published}
-                onChange={(e) => setPublished(e.target.value === "true")}
-              className="font-bold text-xl rounded-xl ml-4  p-1 "
-
-              >
-                <option value={true}>Yes</option>
-                <option value={false}>No</option>
-              </select>
-            </div>
-            <button className="update-btn  border-4 border-black bg-purple-500 font-bold hover:bg-purple-700 rounded-2xl p-1" onClick={handleUpdate}>
-              UPDATE
-            </button>
-          </form>
-        </div>
-      </section>
-    </article>
-
-  );
-};
-
-export default UpdateBlog;
+    load();
+    return () => { active = false; };
+  }, [id, isAuthenticated, user._id, user.role, attempt]);
+  function onSaved(saved) {
+    setBlogs((current) => {
+      const remaining = current.filter((item) => item._id !== saved._id);
+      return saved.published ? [...remaining, saved] : remaining;
+    });
+    navigate("/dashboard?tab=stories");
+  }
+  return <StudioLayout active="edit" hasUnsavedChanges={hasUnsavedChanges}>{loading ? <div className="studio-loading" role="status">Opening your story...</div> : error ? <div className="studio-empty" role="alert"><h1>Unable to open story</h1><p>{error}</p><button className="studio-button" onClick={() => setAttempt((value) => value + 1)}>Try again</button><Link className="text-link" to="/dashboard?tab=stories">Back to stories</Link></div> : <StoryEditor key={blog._id} blog={blog} onSaved={onSaved} onDirtyChange={setHasUnsavedChanges} />}</StudioLayout>;
+}

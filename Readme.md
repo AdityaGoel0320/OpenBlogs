@@ -7,11 +7,15 @@ OpenBlogs is a full-stack publishing platform for independent writers and reader
 ## Product features
 
 - Reader and author accounts with JWT-backed authentication.
-- Author studio with blog creation, editing, deletion, and dashboard charts.
+- Theme-aware author studio with a responsive workspace, library overview, searchable stories, published/draft filters, and confirmed deletion.
+- Shared create/edit writing room with cover previews, optional story sections, word count, publishing checklist, and explicit draft/publish controls.
+- Publishing insights derived from real story counts and topic distribution (readership and engagement are not currently tracked).
 - Cloudinary-hosted cover and article images.
 - Search across story titles, author names, topics, and introductions; filter by available topics.
 - Persistent light and X-inspired dark themes.
 - Responsive editorial feed, story detail pages, and author profiles.
+- Animated editorial reading experience with scroll progress, chapter navigation, adjustable text size, link sharing, and topic-prioritized reading recommendations. Respects reduced-motion preferences.
+- Animated writer directory with name/topic search and sorting; individual author profiles with published writing, topic filters, and real story counts.
 
 ## Stack
 
@@ -19,6 +23,20 @@ OpenBlogs is a full-stack publishing platform for independent writers and reader
 - **API:** Node.js, Express 4, Mongoose
 - **Services:** MongoDB Atlas (or local MongoDB), Cloudinary
 - **Auth:** JWT in an HTTP cookie
+
+## Author workflow
+
+Sign in with an author account and open **Studio**. The overview summarizes your library; **My stories** supports search, status filters, editing, and deletion. **Write a story** opens the editor, while **Insights** shows your publishing balance and topics. **Account** displays your registered details and links to your public author profile.
+
+Studio tabs have shareable URLs such as `/dashboard?tab=stories`. Both creating and editing use the same theme-aware editor. Drafts require a title, topic, cover image, and an introduction of at least 250 characters, just like published stories. Changes are not auto-saved; use **Save draft**, **Publish story**, or **Save & publish**. Cancelling, following workspace links, signing out, or closing the browser with unsaved changes prompts for confirmation.
+
+## Reading experience
+
+Sign in and open a story to enter the reading view. Signing in through a story's prompt returns you to that story. Use the contents guide (collapsible on mobile) to jump between available chapters, and the **Aa** controls to adjust text size for the current story. Reading progress follows the article body, while estimated reading time includes all of its text sections. **Copy link** shares the canonical story address through the browser clipboard when available. Related published stories prioritize the current topic and exclude the open story. Entrance, image, and scroll-reveal animations honor the device's reduced-motion preference.
+
+## Writer discovery
+
+The **Writers** directory supports name/topic searches, topic filtering, alphabetical sorting, and sorting by published story count. Author profiles load independently of the homepage feed, including writers who have not published yet. Public profiles show the writer's name, avatar, joining month, topics, and published stories, without displaying their email or phone number. Both pages support light/dark themes, responsive layouts, and reduced-motion preferences, with explicit empty, loading, and retry states.
 
 ## Local development
 

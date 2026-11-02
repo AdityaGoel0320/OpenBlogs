@@ -1,43 +1,54 @@
-import React, { useContext } from "react";
-import MyBlogs from '../miniComponents/MyBlogs';
-import { Context } from "../../main";
-import { useParams } from "react-router-dom";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { FiArrowLeft, FiArrowRight, FiBookOpen, FiCalendar, FiFeather, FiSearch, FiX } from "react-icons/fi";
+import useWriters, { storiesByWriter, writerTopics } from "../../assets/useWriters";
+import { WriterAvatar, WriterStoryCard, WritersState } from "../miniComponents/WriterElements";
+import "../../writers.css";
 
-const ParticularAuthorProfile = () => {
-  const { blogs } = useContext(Context);
-  const { authorId } = useParams(); // Extracting the 'authorId' from the URL params
+function AuthorProfile() {
+  const { authorId } = useParams();
+  const { authors, stories, loading, error, retry } = useWriters();
+  const reducedMotion = useReducedMotion();
+  const [query, setQuery] = useState("");
+  const [topic, setTopic] = useState("all");
+  const author = authors.find((writer) => String(writer._id) === authorId);
+  const writing = storiesByWriter(stories, authorId);
+  const topics = writerTopics(writing);
+  const filtered = writing.filter((story) => (topic === "all" || story.category === topic) && `${story.title} ${story.intro} ${story.category}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const joined = author?.createdOn ? new Date(author.createdOn) : null;
+  const joinedLabel = joined && !Number.isNaN(joined.getTime()) ? joined.toLocaleDateString(undefined, { month: "long", year: "numeric" }) : "";
+  const reveal = reducedMotion ? {} : { initial: { opacity: 0, y: 22 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.1 }, transition: { duration: 0.55 } };
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [authorId]);
+  useEffect(() => {
+    const previous = document.title;
+    document.title = author ? `${author.name} | OpenBlogs` : "Writer profile | OpenBlogs";
+    return () => { document.title = previous; };
+  }, [author]);
+  function clearFilters() { setQuery(""); setTopic("all"); }
 
-  // Filter the blogs array to find blogs created by the specific author
-  const filteredBlogs = blogs.filter(blog => blog.createdBy === authorId);
-
-  return (
-    <div className="flex justify-center items-center h-full">
-      {filteredBlogs.length === 0 ? ( // Check if filteredBlogs array is empty
-        <div className="text-center">
-          <h1 className="text-3xl font-bold  h-[80vh] flex justify-center items-center ">No blogs found!!!!</h1>
-          {/* You can add more content or styling here */}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-8 m-12 ">
-          {/* Render the filtered blogs or any components you need */}
-          {filteredBlogs.map((element) => (
-            <NavLink to={`/blog/${element._id}`} className="m-4 bg-white rounded-lg overflow-hidden shadow-[rgba(0,_0,_0,_0.4)_0px_30px_90px] flex flex-col justify-between hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)]" key={element._id} style={{ maxWidth: "300px", minWidth: "250px", minHeight: "400px" }}>
-              <img className="w-full h-48 object-cover" src={element.mainImage.url} alt="blog" />
-              <div className="p-4">
-                <span className="bg-teal-400 py-1 px-2 rounded-full">{element.category}</span>
-                <h4 className="font-bold text-xl mt-2">{element.title}</h4>
-                <div className="writer_section flex items-center mt-4">
-                  <img className="w-10 h-10 rounded-full mr-2" src={element.authorAvatar} alt="author_avatar" />
-                  <p className="font-bold">{element.authorName}</p>
-                </div>
-              </div>
-            </NavLink>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <main className="writers-page writers-profile-page">
+    <div className="writers-profile-trail"><Link className="text-link" to="/authors"><FiArrowLeft aria-hidden="true" />All writers</Link><span>THE OPENBLOGS COMMUNITY</span></div>
+    {loading || error ? <WritersState loading={loading} error={error} retry={retry} /> : !author ? <div className="writers-empty"><span className="writers-empty-icon"><FiFeather aria-hidden="true" /></span><h1>This writer could not be found.</h1><p>The profile may no longer be available. There are still plenty of voices to discover.</p><Link className="write-button" to="/authors">Meet other writers <FiArrowRight aria-hidden="true" /></Link></div> : <>
+      <motion.header className="writers-profile-hero" {...reveal}><div className="writers-profile-cover" aria-hidden="true"><span>INDEPENDENT VOICES. SHARED PERSPECTIVES.</span><FiFeather /></div><div className="writers-profile-identity"><WriterAvatar author={author} large /><div className="writers-profile-heading"><span className="section-kicker">WRITER ON OPENBLOGS</span><h1>{author.name}</h1><p>{topics.length ? `Stories and perspectives on ${topics.slice(0, 3).join(", ")}${topics.length > 3 ? ", and more" : ""}.` : "An independent voice. A new perspective waiting to unfold."}</p>{joinedLabel && <span className="writers-joined"><FiCalendar aria-hidden="true" />Writing here since {joinedLabel}</span>}</div><a className="write-button" href="#author-writing"><FiBookOpen aria-hidden="true" />Explore their writing</a></div><div className="writers-profile-details"><div className="writers-profile-counts"><span><strong>{writing.length}</strong>published {writing.length === 1 ? "story" : "stories"}</span><span><strong>{topics.length}</strong>{topics.length === 1 ? "topic" : "topics"} explored</span></div><div className="writers-topic-tags" aria-label="Author's topics">{topics.map((item) => <span key={item}>{item}</span>)}</div></div></motion.header>
+      <section id="author-writing" className="writers-author-writing" aria-labelledby="author-writing-title"><motion.div className="writers-section-heading" {...reveal}><div><span className="section-kicker">FROM THIS WRITER</span><h2 id="author-writing-title">The story so far.</h2></div><p>Ideas, experiences, and a point of view all their own.</p></motion.div>
+        {writing.length ? <>
+          <div className="writers-directory-toolbar">
+            <label className="writers-search"><FiSearch aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search this writer's stories" placeholder="Find a story that speaks to you..." />{query && <button type="button" onClick={() => setQuery("")} aria-label="Clear story search"><FiX aria-hidden="true" /></button>}</label>
+            <label className="writers-select"><span id="author-topic-label">Topic</span><select aria-labelledby="author-topic-label" value={topic} onChange={(event) => setTopic(event.target.value)}><option value="all">All topics</option>{topics.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          </div>
+          <div className="writers-results" role="status">{filtered.length} {filtered.length === 1 ? "story" : "stories"}{query || topic !== "all" ? " matching your filters" : " to spend a little time with"}{(query || topic !== "all") && <button className="text-link" type="button" onClick={clearFilters}>Reset filters <FiX aria-hidden="true" /></button>}</div>
+          {filtered.length ? <div className="story-grid writers-stories-grid">{filtered.map((story, index) => <motion.div key={story._id} {...reveal} transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : Math.min(index, 5) * 0.05 }}><WriterStoryCard story={story} /></motion.div>)}</div> : <div className="writers-empty"><span className="writers-empty-icon"><FiSearch aria-hidden="true" /></span><h2>No stories match these filters.</h2><p>Try a different search or explore another topic from this writer.</p><button className="write-button" type="button" onClick={clearFilters}>Show all stories</button></div>}
+        </> : <WritersState title="Every writer starts with a blank page." description={`${author.name} has not published a story yet. Come back for their first chapter, or discover another voice in the meantime.`} />}
+      </section>
+      <motion.div className="writers-profile-outro" {...reveal}><FiFeather aria-hidden="true" /><div><h2>One voice is just the beginning.</h2><p>Discover more independent writers and a world of different perspectives.</p></div><Link className="text-link" to="/authors">Meet more writers <FiArrowRight aria-hidden="true" /></Link></motion.div>
+    </>}
+  </main>;
 }
 
-export default ParticularAuthorProfile;
+export default function ParticularAuthorProfile() {
+  const { authorId } = useParams();
+  return <AuthorProfile key={authorId} />;
+}

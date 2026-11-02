@@ -162,10 +162,12 @@ footer a:hover { color: var(--accent); }
 }
 @media (max-width: 560px) {
   .nav-shell { width: calc(100% - 28px); }
-  .brand { gap: 8px; font-size: 17px; }
+  .brand { flex-shrink: 0; gap: 8px; font-size: 17px; }
+  .brand small { font-size: 9px; white-space: nowrap; }
   .brand-mark { width: 32px; border-radius: 10px; }
   .write-button { min-height: 38px; padding: 0 11px; font-size: 11px; }
   .nav-actions { gap: 6px; }
+  .nav-actions .write-button { flex-shrink: 0; white-space: nowrap; }
   .nav-actions .theme-toggle { width: 36px; height: 36px; }
   .logout-button { display: none; }
   .hero-section,.story-section,.directory-page { width: calc(100% - 28px); }
@@ -190,6 +192,12 @@ footer a:hover { color: var(--accent); }
   .category-select { flex: 1; }
   .directory-results span:last-child { display: none; }
   .contact-band { width: calc(100% - 28px); margin-bottom: 40px; }
+}
+@media (max-width: 380px) {
+  .nav-shell { gap: 8px; }
+  .nav-actions .write-button { gap: 6px; padding: 0 8px; font-size: 10px; }
+  .nav-actions .write-button svg { display: none; }
+  .nav-actions :is(.theme-toggle,.mobile-menu-button) { width: 32px; height: 32px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

@@ -9,6 +9,7 @@ export const Context = createContext({
 
 const AppWrapper = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [user, setUser] = useState({});
   const [blogs, setBlogs] = useState([]);
   const [mode, setMode] = useState(() => localStorage.getItem("openblogs-theme") || "light");
@@ -28,6 +29,8 @@ const AppWrapper = () => {
         mode,
         setMode,
         isAuthenticated,
+        isAuthLoading,
+        setIsAuthLoading,
         setIsAuthenticated,
       }}
     >

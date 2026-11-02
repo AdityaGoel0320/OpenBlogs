@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { FiEdit3, FiLogOut, FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -12,6 +12,7 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { mode, setMode, isAuthenticated, user, setIsAuthenticated, setUser } = useContext(Context);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const closeMenu = () => setMenuOpen(false);
 
   const handleLogout = async () => {
@@ -27,6 +28,8 @@ function Navbar() {
       toast.error("We couldn't sign you out. Please try again.");
     }
   };
+
+  if (pathname === "/dashboard" || pathname.startsWith("/blog/update/")) return null;
 
   return (
     <header className="site-header">

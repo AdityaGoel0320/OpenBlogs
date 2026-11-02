@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { FiArrowRight, FiEye, FiEyeOff, FiLock } from "react-icons/fi";
 import { Context } from "../../main";
 import axios from "axios";
@@ -17,6 +17,8 @@ const Login = () => {
   const [formError, setFormError] = useState("");
   const { isAuthenticated, setIsAuthenticated, setUser } = useContext(Context);
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const returnTo = typeof state?.returnTo === "string" && /^\/blog\/[a-zA-Z0-9-]+$/.test(state.returnTo) ? state.returnTo : "/";
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -32,7 +34,7 @@ const Login = () => {
       setUser(data.user);
       setIsAuthenticated(true);
       toast.success(data.message || "Welcome back.");
-      navigate("/");
+      navigate(returnTo, { replace: true });
     } catch (error) {
       const message = getApiErrorMessage(error, "We couldn't sign you in. Please try again.");
       setFormError(message);
@@ -42,7 +44,7 @@ const Login = () => {
     }
   };
 
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to={returnTo} replace />;
 
   return (
     <AuthLayout page="login">

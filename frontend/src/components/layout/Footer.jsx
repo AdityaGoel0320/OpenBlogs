@@ -2,19 +2,18 @@ import { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaLinkedinIn, FaTwitter, FaGithub, FaEnvelope } from "react-icons/fa";
 import { Context } from "../../main";
-import { AppName, Email, FrontendUrl, Github, LinkedIn, Phone, Twitter } from "../../assets/FrontendUtils";
+import { AppName, Email, Github, LinkedIn, Phone, Twitter } from "../../assets/FrontendUtils";
 
 const Footer = () => {
-  let url = `${FrontendUrl}/dashboard`
-  const isDashboard = useLocation(url);
+  const { pathname } = useLocation();
   const { mode } = useContext(Context);
+
+  if (pathname === "/dashboard" || pathname.startsWith("/blog/update/")) return null;
 
   return (
     <footer
       className={
-        isDashboard.pathname === "/dashboard"
-          ? "hidden"
-          : mode === "light"
+        mode === "light"
             ? "bg-gray-100"
             : "bg-gray-900 text-white"
       }

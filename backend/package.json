@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "code": "nodemon server.js -e hbs,html,js,jsx,env"
+    "backend": "nodemon server.js -e hbs,html,js,jsx,env"
   },
   "author": "",
   "license": "ISC",

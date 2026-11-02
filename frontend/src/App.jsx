@@ -23,7 +23,7 @@ import Navbar from "./components/layout/NavbarModern";
 const ParticularAuthorProfile = lazy(() => import("./components/pages/ParticularAuthorProfile"));
 
 const App = () => {
-  const { setUser, setIsAuthenticated, setBlogs } =
+  const { setUser, setIsAuthenticated, setBlogs, setIsAuthLoading } =
     useContext(Context);
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,6 +42,8 @@ const App = () => {
         console.log(error);
         setIsAuthenticated(false);
         setUser({});
+      } finally {
+        setIsAuthLoading(false);
       }
     };
     const fetchBlogs = async () => {
@@ -57,7 +59,7 @@ const App = () => {
 
     fetchUser();
     fetchBlogs();
-  }, [setBlogs, setIsAuthenticated, setUser]);
+  }, [setBlogs, setIsAuthenticated, setUser, setIsAuthLoading]);
   return (
     <>
 

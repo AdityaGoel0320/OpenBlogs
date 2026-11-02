@@ -1,61 +1,11 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
+import { Link } from "react-router-dom";
+import { FiArrowUpRight, FiMail, FiShield, FiUser } from "react-icons/fi";
 import { Context } from "../../main";
-import { motion } from "framer-motion";
 
-const MyProfile = () => {
-  const { user, mode } = useContext(Context);
-  const [img, setImg] = useState("");
-
-  // Check if user and avatar properties are defined before accessing them
-  useEffect(() => {
-    if (user && user.avatar && user.avatar.url) {
-      setImg(user.avatar.url);
-    }
-  }, [user]);
-
-  return (
-    <motion.article
-      className={
-        mode === "dark"
-          ? "dark-bg about shadow-lg rounded-lg overflow-hidden"
-          : "light-bg about shadow-lg rounded-lg overflow-hidden"
-      }
-      initial={{ opacity: 0, y: -50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -50 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="UserContainer mx-auto max-w-md p-6 m-4">
-        {img && (
-          <motion.img
-            src={img}
-            alt=""
-            className="mx-auto rounded-full w-24 h-24 mb-4 shadow-md"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          />
-        )}
-        {/* Render img tag only if img is defined */}
-        <h1 className="text-2xl font-bold mb-2">{user.name}</h1>
-        <p className="mb-2">
-          Email: <strong>{user.email}</strong>
-        </p>
-        <p className="mb-2">
-          Phone: <strong>{user.phone}</strong>
-        </p>
-        <p className="mb-2">
-          Education: <strong>{user.education}</strong>
-        </p>
-        <p className="mb-2">
-          Role: <strong>{user.role}</strong>
-        </p>
-        <p className="mb-2">
-          Created On: <strong>{user.createdOn}</strong>
-        </p>
-      </div>
-    </motion.article>
-  );
-};
-
-export default MyProfile;
+export default function MyProfile() {
+  const { user } = useContext(Context);
+  const created = user.createdOn ? new Date(user.createdOn) : null;
+  const joined = created && !Number.isNaN(created.getTime()) ? created.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "Not available";
+  return <><div className="studio-page-heading"><div><span className="section-kicker">YOUR IDENTITY</span><h1>Your account</h1><p>The person behind the stories. Your profile and account details.</p></div><Link className="studio-button secondary" to={`/author/${user._id}`}>View author profile <FiArrowUpRight aria-hidden="true" /></Link></div><div className="studio-profile-grid"><section className="studio-panel studio-profile-card"><div className="studio-profile-cover" /><div className="studio-profile-avatar">{user.avatar?.url ? <img src={user.avatar.url} alt={user.name} /> : <FiUser aria-hidden="true" />}</div><h2>{user.name}</h2><span className="studio-status published"><span />{user.role}</span><p>Your words, your perspective.<br />Part of the OpenBlogs community.</p><div className="studio-profile-email"><FiMail aria-hidden="true" />{user.email}</div></section><section className="studio-panel"><div className="studio-panel-heading"><span className="studio-step"><FiShield aria-hidden="true" /></span><div><h2>Account details</h2><p>Information provided when you joined OpenBlogs.</p></div></div><dl className="studio-account-details">{[["Full name", user.name], ["Email address", user.email], ["Phone number", user.phone], ["Education", user.education], ["Account type", user.role], ["Member since", joined]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value || "Not provided"}</dd></div>)}</dl><p className="studio-account-note">These are your registered account details. Your email and phone number are shown here for your reference.</p></section></div></>;
+}
