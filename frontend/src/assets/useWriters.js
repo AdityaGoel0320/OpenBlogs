@@ -11,6 +11,40 @@ export function writerTopics(stories) {
   return [...new Set(stories.map((story) => story.category).filter(Boolean))].sort();
 }
 
+export function writerReputation(stories) {
+  const totals = stories.filter((story) => story.published !== false).reduce((result, story) => {
+    const stats = story.community || {};
+    result.upvoteCount += stats.upvoteCount || 0;
+    result.ratingCount += stats.ratingCount || 0;
+    result.starTotal += stats.starTotal || 0;
+    result.commentCount += stats.commentCount || 0;
+    return result;
+  }, { upvoteCount: 0, ratingCount: 0, starTotal: 0, commentCount: 0 });
+  return { ...totals, averageRating: totals.ratingCount ? totals.starTotal / totals.ratingCount : 0, score: totals.upvoteCount + totals.starTotal };
+}
+
+export function rankWriters(authors, stories) {
+  const writers = authors.map((author) => {
+    const writing = storiesByWriter(stories, author._id).filter((story) => story.published !== false);
+    return { author, writing, topics: writerTopics(writing), reputation: writerReputation(writing) };
+  }).sort((first, second) => second.reputation.score - first.reputation.score || first.author.name.localeCompare(second.author.name));
+  let rank = null;
+  return writers.map((writer, index) => {
+    if (!writer.reputation.score) return { ...writer, rank: null };
+    if (index === 0 || writer.reputation.score !== writers[index - 1].reputation.score) rank = index + 1;
+    return { ...writer, rank };
+  });
+}
+
+export function compareWriters(first, second, sort) {
+  let difference = 0;
+  if (sort === "community") difference = second.reputation.score - first.reputation.score;
+  if (sort === "upvotes") difference = second.reputation.upvoteCount - first.reputation.upvoteCount;
+  if (sort === "stars") difference = second.reputation.averageRating - first.reputation.averageRating || second.reputation.ratingCount - first.reputation.ratingCount;
+  if (sort === "stories") difference = second.writing.length - first.writing.length;
+  return difference || first.author.name.localeCompare(second.author.name);
+}
+
 export default function useWriters() {
   const [state, setState] = useState({ authors: [], stories: [], loading: true, error: "" });
   const [attempt, setAttempt] = useState(0);

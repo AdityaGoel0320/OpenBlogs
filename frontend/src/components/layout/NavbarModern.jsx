@@ -13,7 +13,7 @@ function Navbar() {
   const [signingOut, setSigningOut] = useState(false);
   const accountRef = useRef(null);
   const { mode, setMode, isAuthenticated, user, setIsAuthenticated, setUser } = useContext(Context);
-  const isAuthor = user.role === "Author";
+  const isAuthor = user?.role === "Author";
   const nextTheme = mode === "dark" ? "light" : "dark";
   const navigate = useNavigate();
   const { pathname } = useLocation();

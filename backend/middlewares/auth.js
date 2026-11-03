@@ -7,14 +7,19 @@ import jwt from "jsonwebtoken";
 export const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
   const { token } = req.cookies;
   if (!token) {
-    return next(new ErrorHandler("User is not authenticated!", 400));
+    return next(new ErrorHandler("User is not authenticated!", 401));
   }
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET_KEY || process.env.JWT_SECRET
-  );
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || process.env.JWT_SECRET);
+  } catch {
+    return next(new ErrorHandler("Your session has expired. Please sign in again.", 401));
+  }
 
   req.user = await User.findById(decoded.id);
+  if (!req.user) {
+    return next(new ErrorHandler("This account is no longer available. Please sign in again.", 401));
+  }
 
   next();
 });

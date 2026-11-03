@@ -1,6 +1,8 @@
 import app from "./app.js";
 import cloudinary from "cloudinary";
 import { dbConnection } from "./database/dbConnection.js";
+import { BlogInteraction } from "./models/blogInteractionSchema.js";
+import { Comment } from "./models/commentSchema.js";
 
 cloudinary.v2.config({
   cloud_name:
@@ -11,6 +13,7 @@ cloudinary.v2.config({
 });
 
 await dbConnection();
+await Promise.all([BlogInteraction.init(), Comment.init()]);
 
 const port = process.env.PORT || 7777;
 app.listen(port, () => {

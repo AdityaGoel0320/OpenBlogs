@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { FiArrowUpRight, FiBookOpen, FiCheck, FiChevronDown, FiUsers } from "react-icons/fi";
+import { FiArrowUp, FiArrowUpRight, FiBookOpen, FiCheck, FiChevronDown, FiStar, FiUsers } from "react-icons/fi";
 
 export function WriterSelect({ label, value, options, onChange }) {
   const [open, setOpen] = useState(false);
@@ -89,6 +89,6 @@ WritersState.propTypes = { loading: PropTypes.bool, error: PropTypes.string, ret
 export function WriterStoryCard({ story }) {
   const words = [story.intro, story.paraOneDescription, story.paraTwoDescription, story.paraThreeDescription].filter(Boolean).join(" ").trim();
   const minutes = Math.max(1, Math.ceil((words ? words.split(/\s+/).length : 0) / 200));
-  return <Link to={`/blog/${story._id}`} className="story-card writers-story-card">{story.mainImage?.url ? <div className="story-image-wrap"><img className="story-image" src={story.mainImage.url} alt="" loading="lazy" /><span className="category-label">{story.category}</span></div> : <div className="writers-story-placeholder"><FiBookOpen aria-hidden="true" /><span>{story.category}</span></div>}<div className="story-card-copy"><h3>{story.title}</h3><p>{story.intro}</p><div className="writers-story-footer"><span><FiBookOpen aria-hidden="true" />{minutes} min read</span><span>Read story <FiArrowUpRight aria-hidden="true" /></span></div></div></Link>;
+  return <Link to={`/blog/${story._id}`} className="story-card writers-story-card">{story.mainImage?.url ? <div className="story-image-wrap"><img className="story-image" src={story.mainImage.url} alt="" loading="lazy" /><span className="category-label">{story.category}</span></div> : <div className="writers-story-placeholder"><FiBookOpen aria-hidden="true" /><span>{story.category}</span></div>}<div className="story-card-copy"><h3>{story.title}</h3><p>{story.intro}</p><div className="writers-engagement"><span><FiArrowUp aria-hidden="true" />{story.community?.upvoteCount || 0} upvotes</span><span><FiStar aria-hidden="true" />{story.community?.ratingCount ? `${story.community.averageRating.toFixed(1)} (${story.community.ratingCount})` : "Unrated"}</span></div><div className="writers-story-footer"><span><FiBookOpen aria-hidden="true" />{minutes} min read</span><span>Read story <FiArrowUpRight aria-hidden="true" /></span></div></div></Link>;
 }
 WriterStoryCard.propTypes = { story: PropTypes.object.isRequired };

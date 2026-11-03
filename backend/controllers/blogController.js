@@ -2,6 +2,9 @@ import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { Blog } from "../models/blogSchema.js";
 import cloudinary from "cloudinary";
+import { withCommunityStats } from "../utils/blogCommunity.js";
+import { BlogInteraction } from "../models/blogInteractionSchema.js";
+import { Comment } from "../models/commentSchema.js";
 
 export const blogPost = catchAsyncErrors(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
@@ -127,6 +130,7 @@ export const deleteBlog = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Blog not found!", 404));
   }
   await blog.deleteOne();
+  await Promise.all([BlogInteraction.deleteMany({ blog: blog._id }), Comment.deleteMany({ blog: blog._id })]);
   res.status(200).json({
     success: true,
     message: "Blog deleted!",
@@ -137,7 +141,7 @@ export const getAllBlogs = catchAsyncErrors(async (req, res, next) => {
   const allBlogs = await Blog.find({ published: true });
   res.status(200).json({
     success: true,
-    allBlogs,
+    allBlogs: await withCommunityStats(allBlogs),
   });
 });
 
@@ -158,7 +162,7 @@ export const getMyBlogs = catchAsyncErrors(async (req, res, next) => {
   const blogs = await Blog.find({ createdBy });
   res.status(200).json({
     success: true,
-    blogs,
+    blogs: await withCommunityStats(blogs),
   });
 });
 

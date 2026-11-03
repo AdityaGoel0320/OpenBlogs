@@ -36,8 +36,8 @@ const App = () => {
             withCredentials: true,
           }
         );
-        setUser(data.user);
-        setIsAuthenticated(true);
+        setUser(data.user || {});
+        setIsAuthenticated(Boolean(data.user?._id));
       } catch (error) {
         console.log(error);
         setIsAuthenticated(false);

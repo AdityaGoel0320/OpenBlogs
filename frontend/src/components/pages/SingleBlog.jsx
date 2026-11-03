@@ -2,9 +2,10 @@ import { useContext, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { FiArrowLeft, FiArrowRight, FiArrowUp, FiArrowUpRight, FiBookOpen, FiCheck, FiClock, FiCopy, FiMinus, FiPlus } from "react-icons/fi";
+import { FiArrowLeft, FiArrowRight, FiArrowUp, FiArrowUpRight, FiBookOpen, FiCheck, FiClock, FiShare2, FiMinus, FiPlus } from "react-icons/fi";
 import axios from "axios";
-import toast from "react-hot-toast";
+import ShareMenu from "../miniComponents/ShareMenu";
+import StoryCommunity from "../miniComponents/StoryCommunity";
 import { Context } from "../../main";
 import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
@@ -23,6 +24,7 @@ function StoryReader({ blog }) {
   const [progress, setProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("introduction");
   const [textSize, setTextSize] = useState(1);
+  const [shareOpen, setShareOpen] = useState(false);
   const sections = sectionKeys.map((key, index) => ({
     id: `chapter-${index + 1}`,
     title: blog[`${key}Title`],
@@ -75,18 +77,8 @@ function StoryReader({ blog }) {
     };
   }, [blog._id, textSize]);
 
-  async function copyLink() {
-    try {
-      if (!navigator.clipboard?.writeText) {
-        toast.error("Link copying is unavailable in this browser. You can copy the address from your address bar.");
-        return;
-      }
-      await navigator.clipboard.writeText(`${window.location.origin}/blog/${blog._id}`);
-      toast.success("Story link copied. Pass a good read along.");
-    } catch (error) {
-      console.error("Could not copy story link", error);
-      toast.error("We couldn't copy the link. Copy the address from your address bar instead.");
-    }
+  function openShareMenu() {
+    setShareOpen(true);
   }
   function goToSection(event, target) {
     event.preventDefault();
@@ -109,11 +101,11 @@ function StoryReader({ blog }) {
           <div className="reader-heading-meta"><span className="reader-topic"><span />{blog.category}</span><span><FiClock aria-hidden="true" />{readingTime(blog)} min read</span>{blog.published === false && <span className="reader-draft-label">Draft preview</span>}</div>
           <h1>{blog.title}</h1>
           <p className="reader-heading-note">An independent perspective. A story worth slowing down for.</p>
-          <div className="reader-byline-row"><div className="reader-byline">{blog.authorAvatar ? <img src={blog.authorAvatar} alt="" /> : <span className="reader-avatar">{blog.authorName?.slice(0, 1)}</span>}<div><span>Written by</span>{authorId ? <Link to={`/author/${authorId}`}>{blog.authorName}<FiArrowUpRight aria-hidden="true" /></Link> : <strong>{blog.authorName}</strong>}</div></div><div className="reader-toolbar"><div className="reader-text-controls" role="group" aria-label="Reading text size"><button type="button" disabled={textSize === 0} onClick={() => setTextSize((size) => size - 1)} aria-label="Decrease text size"><FiMinus aria-hidden="true" /></button><span aria-live="polite" aria-atomic="true">Aa<span className="reader-sr-only"> {["comfortable", "standard", "large"][textSize]} text</span></span><button type="button" disabled={textSize === 2} onClick={() => setTextSize((size) => size + 1)} aria-label="Increase text size"><FiPlus aria-hidden="true" /></button></div><button type="button" className="reader-share" onClick={copyLink}><FiCopy aria-hidden="true" /><span>Copy link</span></button></div></div>
+          <div className="reader-byline-row"><div className="reader-byline">{blog.authorAvatar ? <img src={blog.authorAvatar} alt="" /> : <span className="reader-avatar">{blog.authorName?.slice(0, 1)}</span>}<div><span>Written by</span>{authorId ? <Link to={`/author/${authorId}`}>{blog.authorName}<FiArrowUpRight aria-hidden="true" /></Link> : <strong>{blog.authorName}</strong>}</div></div><div className="reader-toolbar"><div className="reader-text-controls" role="group" aria-label="Reading text size"><button type="button" disabled={textSize === 0} onClick={() => setTextSize((size) => size - 1)} aria-label="Decrease text size"><FiMinus aria-hidden="true" /></button><span aria-live="polite" aria-atomic="true">Aa<span className="reader-sr-only"> {["comfortable", "standard", "large"][textSize]} text</span></span><button type="button" disabled={textSize === 2} onClick={() => setTextSize((size) => size + 1)} aria-label="Increase text size"><FiPlus aria-hidden="true" /></button></div><button type="button" className="reader-share" onClick={openShareMenu} aria-haspopup="dialog"><FiShare2 aria-hidden="true" /><span>Share</span></button></div></div>
         </motion.header>
         {blog.mainImage?.url && <motion.figure className="reader-cover" {...reveal}><img src={blog.mainImage.url} alt={`Cover for ${blog.title}`} fetchPriority="high" /><figcaption><span>OPENBLOGS / {blog.category}</span><span>Words that bring us closer.</span></figcaption></motion.figure>}
         <div className="reader-layout">
-          <aside className="reader-sidebar"><div className="reader-sidebar-inner"><span className="reader-kicker">IN THIS STORY</span>{renderContents()}<div className="reader-reading-status"><div><FiBookOpen aria-hidden="true" /><span>{Math.round(progress * 100)}% read</span></div><div className="reader-small-progress"><span style={{ width: `${progress * 100}%` }} /></div><p>Take your time.<br />Good ideas deserve a little space.</p></div><button className="text-link" type="button" onClick={copyLink}>Share this perspective <FiArrowUpRight aria-hidden="true" /></button></div></aside>
+          <aside className="reader-sidebar"><div className="reader-sidebar-inner"><span className="reader-kicker">IN THIS STORY</span>{renderContents()}<div className="reader-reading-status"><div><FiBookOpen aria-hidden="true" /><span>{Math.round(progress * 100)}% read</span></div><div className="reader-small-progress"><span style={{ width: `${progress * 100}%` }} /></div><p>Take your time.<br />Good ideas deserve a little space.</p></div><button className="text-link" type="button" onClick={openShareMenu} aria-haspopup="dialog">Share this perspective <FiArrowUpRight aria-hidden="true" /></button></div></aside>
           <article className={`reader-article reader-text-${textSize}`}>
             <details className="reader-mobile-contents"><summary>In this story <span>{contents.length} {contents.length === 1 ? "part" : "parts"}</span></summary>{renderContents()}</details>
             <div className="reader-prose" ref={bodyRef}>
@@ -121,7 +113,8 @@ function StoryReader({ blog }) {
               {sections.map((section, index) => <motion.section className="reader-chapter" key={section.id} id={section.id} data-reader-section tabIndex={-1} aria-label={section.title || `Section ${index + 1}`} {...reveal}>{section.title && <><span className="reader-chapter-number">/ {String(index + 1).padStart(2, "0")}</span><h2>{section.title}</h2></>}{section.image && <figure><img src={section.image} alt={section.title ? `Illustration for ${section.title}` : `Story section ${index + 1} illustration`} loading="lazy" decoding="async" /></figure>}{section.description && <p>{section.description}</p>}</motion.section>)}
               <div className="reader-story-end" aria-hidden="true"><span /><i /><span /></div>
             </div>
-            <motion.div className="reader-finish" {...reveal}><div className="reader-finish-icon"><FiCheck aria-hidden="true" /></div><span className="reader-kicker">A MOMENT WELL SPENT</span><h2>Good stories stay with you.</h2><p>If this one gave you a new perspective, pass it on. The best ideas are the ones we share.</p><div><button type="button" className="write-button" onClick={copyLink}><FiCopy aria-hidden="true" />Share this story</button><a className="text-link" href="#more-stories" onClick={(event) => goToSection(event, "more-stories")}>Find your next read <FiArrowRight aria-hidden="true" /></a></div></motion.div>
+            <StoryCommunity blog={blog} />
+            <motion.div className="reader-finish" {...reveal}><div className="reader-finish-icon"><FiCheck aria-hidden="true" /></div><span className="reader-kicker">A MOMENT WELL SPENT</span><h2>Good stories stay with you.</h2><p>If this one gave you a new perspective, pass it on. The best ideas are the ones we share.</p><div><button type="button" className="write-button" onClick={openShareMenu} aria-haspopup="dialog"><FiShare2 aria-hidden="true" />Share this story</button><a className="text-link" href="#more-stories" onClick={(event) => goToSection(event, "more-stories")}>Find your next read <FiArrowRight aria-hidden="true" /></a></div></motion.div>
             <motion.div className="reader-author-card" {...reveal}>{blog.authorAvatar && <img src={blog.authorAvatar} alt="" loading="lazy" />}<div><span className="reader-kicker">THE VOICE BEHIND THE STORY</span><h2>{blog.authorName}</h2><p>An independent voice in the OpenBlogs community.</p>{authorId && <Link className="text-link" to={`/author/${authorId}`}>More from this writer <FiArrowUpRight aria-hidden="true" /></Link>}</div></motion.div>
           </article>
           <div className="reader-margin-note" aria-hidden="true"><span>INDEPENDENT VOICES.</span><span>SHARED PERSPECTIVES.</span></div>
@@ -129,6 +122,7 @@ function StoryReader({ blog }) {
         <motion.section className="reader-more" id="more-stories" tabIndex={-1} {...reveal}><div className="section-heading"><div><span className="section-kicker">STAY CURIOUS</span><h2>{related.length ? "One good read leads to another." : "There is always another perspective."}</h2><p>{related.length ? "A few more stories to keep your curiosity going." : "Explore the journal for your next story worth slowing down for."}</p></div><Link className="text-link" to="/blogs">Explore all stories <FiArrowUpRight aria-hidden="true" /></Link></div>{related.length > 0 && <div className="story-grid reader-related-grid">{related.map((story, index) => <Link className="story-card" to={`/blog/${story._id}`} key={story._id} style={{ "--story-order": index }}>{story.mainImage?.url && <div className="story-image-wrap"><img className="story-image" src={story.mainImage.url} alt="" loading="lazy" /><span className="category-label">{story.category}</span></div>}<div className="story-card-copy"><h3>{story.title}</h3><p>{story.intro}</p><div className="story-byline">{story.authorAvatar && <img src={story.authorAvatar} alt="" loading="lazy" />}<span>{story.authorName}</span><span className="byline-dot" /><span>{readingTime(story)} min read</span></div></div></Link>)}</div>}</motion.section>
         <div className="reader-bottom-bar"><Link to={user?.role === "Author" ? "/dashboard?tab=create" : "/blogs"}><FiBookOpen aria-hidden="true" />{user?.role === "Author" ? "Have a perspective of your own? Write a story." : "More voices. More perspectives. Keep exploring."}<FiArrowRight aria-hidden="true" /></Link><a href="#story-top" className="text-link" onClick={(event) => goToSection(event, "story-top")}>Back to top <FiArrowUp aria-hidden="true" /></a></div>
       </div>
+      <ShareMenu open={shareOpen} onClose={() => setShareOpen(false)} title={blog.title} url={`${window.location.origin}/blog/${blog._id}`} />
     </main>
   );
 }
