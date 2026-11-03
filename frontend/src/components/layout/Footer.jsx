@@ -62,7 +62,7 @@ const Footer = () => {
           <div className="text-lg font-semibold">{AppName}</div>
           <div className="flex space-x-4">
             <a href={LinkedIn} target="_blank" rel="noopener noreferrer"><FaLinkedinIn className="text-xl" /></a>
-            <a href={Twitter} target="_blank" rel="noopener noreferrer"><FaTwitter className="text-xl" /></a>
+            {/* <a href={Twitter} target="_blank" rel="noopener noreferrer"><FaTwitter className="text-xl" /></a> */}
             <a href={Github} target="_blank" rel="noopener noreferrer"><FaGithub className="text-xl" /></a>
             <a href={`mailto:${Email}`}><FaEnvelope className="text-xl" /></a>
           </div>
