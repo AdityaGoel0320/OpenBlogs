@@ -1,34 +1,32 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
+import { Link } from "react-router-dom";
+import { FiArrowRight, FiUser } from "react-icons/fi";
 import { Context } from "../../main";
+import MyProfile from "../miniComponents/MyProfile";
+import "../../studio.css";
 
-const AboutUser = () => {
-  const { user, mode } = useContext(Context);
-  const [img, setImg] = useState("");
-  console.log(user)
-  // Check if user and avatar properties are defined before accessing them
-  useEffect(() => {
-    if (user && user.avatar && user.avatar.url) {
-      setImg(user.avatar.url);
-    }
-  }, [user]);
+export default function AboutUser() {
+  const { isAuthenticated, isAuthLoading } = useContext(Context);
+  let content;
 
-  return (
-    <>
+  if (isAuthLoading) {
+    content = (
+      <output className="studio-loading">
+        <span className="studio-spinner" />Loading your account...
+      </output>
+    );
+  } else if (isAuthenticated) {
+    content = <MyProfile showAuthorLink={false} />;
+  } else {
+    content = (
+      <section className="studio-empty" aria-labelledby="about-user-title">
+        <span className="studio-empty-icon"><FiUser aria-hidden="true" /></span>
+        <h1 id="about-user-title">Your account, all in one place.</h1>
+        <p>Sign in to see your OpenBlogs profile and account details.</p>
+        <Link className="studio-button" to="/login">Sign in <FiArrowRight aria-hidden="true" /></Link>
+      </section>
+    );
+  }
 
-      <article className={mode === "dark" ? "dark-bg about" : "light-bg about"}>
-        <div className="UserContainer">
-          {img && <img src={img} alt="" />} {/* Render img tag only if img is defined */}
-          <h1>{user.name}</h1>
-          <p>Email: <strong>  {user.email}</strong></p>
-          <p>Phone: <strong> {user.phone}</strong></p>
-          <p>Education: <strong> {user.education}</strong></p>
-          <p>Role: <strong> {user.role}</strong></p>
-          <p>Created On: <strong> {user.createdOn}</strong></p>
-        </div>
-      </article>
-    </>
-  );
-};
-
-
-export default AboutUser;
+  return <main className="studio-main about-user-page">{content}</main>;
+}
