@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaLinkedinIn, FaTwitter, FaGithub, FaEnvelope } from "react-icons/fa";
 import { Context } from "../../main";
-import { AppName, Email, Github, LinkedIn, Phone, Twitter } from "../../assets/FrontendUtils";
+import { AppName, Email, Github, LinkedIn, Phone, Twitter } from "../../assets/frontendConstants";
 
 const Footer = () => {
   const { pathname } = useLocation();

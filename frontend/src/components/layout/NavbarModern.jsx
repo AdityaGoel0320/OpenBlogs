@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { FiEdit3, FiLogOut, FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { AppName, BackendUrl } from "../../assets/FrontendUtils";
+import { AppName, BackendUrl } from "../../assets/frontendConstants";
 import { Context } from "../../main";
 
 const navigation = [["Discover", "/blogs"], ["Writers", "/authors"], ["About", "/about"]];

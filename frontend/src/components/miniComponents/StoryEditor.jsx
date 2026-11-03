@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiCheck, FiImage, FiSave, FiSend } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 
 const sections = ["paraOne", "paraTwo", "paraThree"];

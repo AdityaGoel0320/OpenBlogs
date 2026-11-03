@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 
 const PopularAuthors = () => {
   const [authors, setAuthors] = useState([]);

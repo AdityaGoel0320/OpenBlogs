@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BackendUrl } from "./FrontendUtils";
+import { BackendUrl } from "./frontendConstants";
 import { getApiErrorMessage } from "./apiErrorMessage";
 
 export function storiesByWriter(stories, authorId) {

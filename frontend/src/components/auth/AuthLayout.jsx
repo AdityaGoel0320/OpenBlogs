@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { AppName } from "../../assets/FrontendUtils";
+import { AppName } from "../../assets/frontendConstants";
 
 function AuthLayout({ children, page }) {
   return (

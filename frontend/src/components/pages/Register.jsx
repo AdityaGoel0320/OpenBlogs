@@ -4,7 +4,7 @@ import { FiArrowRight, FiImage, FiUser } from "react-icons/fi";
 import { Context } from "../../main";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 import AvatarCropper from "../auth/AvatarCropper";
 import AuthLayout from "../auth/AuthLayout";

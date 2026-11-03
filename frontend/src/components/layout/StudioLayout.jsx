@@ -5,7 +5,7 @@ import { FiArrowUpRight, FiBarChart2, FiBookOpen, FiEdit3, FiGrid, FiLogOut, FiM
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Context } from "../../main";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 import "../../studio.css";
 

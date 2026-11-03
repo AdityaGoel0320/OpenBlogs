@@ -1,6 +1,6 @@
 import { FiArrowUpRight, FiMail } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { Email } from "../../assets/FrontendUtils";
+import { Email } from "../../assets/frontendConstants";
 
 function ContactBand() {
   return <section className="contact-band">

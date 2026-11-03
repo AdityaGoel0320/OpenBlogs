@@ -4,7 +4,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { FiArrowUpRight, FiEdit3, FiFileText, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 
 export default function MyBlogs({ blogs, onDeleted, compact = false }) {

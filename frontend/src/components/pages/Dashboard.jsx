@@ -8,7 +8,7 @@ import MyProfile from "../miniComponents/MyProfile";
 import CreateBlog from "../miniComponents/CreateBlog";
 import Chart from "../miniComponents/Chart";
 import { Context } from "../../main";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 
 export default function Dashboard() {

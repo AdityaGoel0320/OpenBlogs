@@ -18,7 +18,7 @@ import axios from "axios";
 const UpdateBlog = lazy(() => import("./components/pages/UpdateBlog"));
 const Error404 = lazy(() => import("./components/pages/Error404"));
 const AboutUser = lazy(() => import("./components/pages/AboutUser"));
-import { BackendUrl } from "./assets/FrontendUtils";
+import { BackendUrl } from "./assets/frontendConstants";
 import Navbar from "./components/layout/NavbarModern";
 const ParticularAuthorProfile = lazy(() => import("./components/pages/ParticularAuthorProfile"));
 

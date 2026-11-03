@@ -6,7 +6,7 @@ import { FiArrowLeft, FiArrowRight, FiArrowUp, FiArrowUpRight, FiBookOpen, FiChe
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Context } from "../../main";
-import { BackendUrl } from "../../assets/FrontendUtils";
+import { BackendUrl } from "../../assets/frontendConstants";
 import { getApiErrorMessage } from "../../assets/apiErrorMessage";
 import "../../reader.css";
 
