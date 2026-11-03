@@ -1,6 +1,6 @@
 export const AppName = "OpenBlogs"
-// export const BackendUrl = "http://localhost:7000";
-export const BackendUrl = "https://openblogs-plm9.onrender.com";
+export const BackendUrl = "http://localhost:7000";
+// export const BackendUrl = "https://openblogs-plm9.onrender.com";
 export const Phone = "9773773473"
 export const email = ""
 export const name = "Aditya Goel"

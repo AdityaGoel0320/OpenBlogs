@@ -144,3 +144,19 @@ export const getAllAuthors = catchAsyncErrors(async (req, res, next) => {
     authors,
   });
 });
+
+export const requestAuthorAccess = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findOneAndUpdate(
+    { _id: req.user._id, role: { $in: ["Reader", "Author"] } },
+    { $set: { role: "Author" } },
+    { new: true, runValidators: true }
+  );
+  if (!user) {
+    return next(new ErrorHandler("Unable to enable author access for this account.", 409));
+  }
+  res.status(200).json({
+    success: true,
+    message: "Author access enabled. You can now write your first story.",
+    user,
+  });
+});

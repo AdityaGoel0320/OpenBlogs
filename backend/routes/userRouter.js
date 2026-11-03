@@ -5,6 +5,7 @@ import {
   login,
   logout,
   register,
+  requestAuthorAccess,
 } from "../controllers/userController.js";
 import { isAuthenticated, isAuthorized } from "../middlewares/auth.js";
 
@@ -14,6 +15,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/logout", isAuthenticated, logout);
 router.get("/myprofile", isAuthenticated, getMyProfile);
+router.post("/author-access", isAuthenticated, requestAuthorAccess);
 router.get("/authors", getAllAuthors);
 
 export default router;
