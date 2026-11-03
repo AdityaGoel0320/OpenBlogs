@@ -11,9 +11,12 @@ const navigation = [["Discover", "/blogs"], ["Writers", "/authors"], ["About", "
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [failedAvatar, setFailedAvatar] = useState(null);
   const accountRef = useRef(null);
   const { mode, setMode, isAuthenticated, user, setIsAuthenticated, setUser } = useContext(Context);
   const isAuthor = user?.role === "Author";
+  const avatarUrl = user?.avatar?.url;
+  const initial = user?.name?.trim().charAt(0).toUpperCase() || "R";
   const nextTheme = mode === "dark" ? "light" : "dark";
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -86,7 +89,7 @@ function Navbar() {
         </div>
         <div className="nav-actions">
           {isAuthenticated ? <details className="account-dropdown" ref={accountRef} onToggle={(event) => { if (event.currentTarget.open) setMenuOpen(false); }} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }}>
-            <summary className="account-trigger"><span className="nav-avatar" aria-hidden="true">{user?.name?.slice(0, 1) || "R"}</span><span>Account</span><FiChevronDown className="account-chevron" aria-hidden="true" /></summary>
+            <summary className="account-trigger" aria-label="Account"><span className="nav-avatar" aria-hidden="true">{initial}{avatarUrl && failedAvatar !== avatarUrl && <img key={avatarUrl} src={avatarUrl} alt="" onError={() => setFailedAvatar(avatarUrl)} />}</span><span className="account-trigger-label">Account</span><FiChevronDown className="account-chevron" aria-hidden="true" /></summary>
             <div className="account-panel">
               <div className="account-identity"><strong>{user?.name || "Your account"}</strong><span>{user?.role}</span></div>
               <NavLink to="/aboutUser" onClick={closeMenu}><FiUser aria-hidden="true" />My profile</NavLink>

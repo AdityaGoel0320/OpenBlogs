@@ -11,6 +11,57 @@ export function writerTopics(stories) {
   return [...new Set(stories.map((story) => story.category).filter(Boolean))].sort();
 }
 
+export function writerBio(author, stories = []) {
+  if (typeof author.bio === "string" && author.bio.trim()) return author.bio.trim();
+  const name = author.name?.trim() || "This writer";
+  const identity = String(author._id || name);
+  let seed = 2166136261;
+  for (const character of identity) seed = Math.imul(seed ^ character.charCodeAt(0), 16777619) >>> 0;
+  const published = stories.filter((story) => story.published !== false);
+  const topics = writerTopics(published);
+  const subject = topics.slice(0, 2).join(" and ") || "the OpenBlogs journal";
+  const collection = `${published.length} published ${published.length === 1 ? "story" : "stories"}`;
+  const introductions = published.length ? [
+    `${name} writes about ${subject}.`,
+    `Discover ${name}'s perspective on ${subject}.`,
+    `${name}'s writing brings ${subject} to the page.`,
+    `Meet ${name}, with ${collection} on OpenBlogs.`,
+    `Explore ${subject} through ${name}'s writing.`,
+    `${name}'s collection includes ${collection}.`,
+    `Read ${name}'s stories on ${subject}.`,
+    `${name} contributes to the conversation around ${subject}.`,
+  ] : [
+    `${name} has joined the OpenBlogs community.`,
+    `Meet ${name}, a new voice on OpenBlogs.`,
+    `This is ${name}'s corner of OpenBlogs.`,
+    `${name}'s author profile is ready for its first story.`,
+    `A new chapter on OpenBlogs starts with ${name}.`,
+    `${name} is part of our growing writing community.`,
+    `Find ${name} among the voices of OpenBlogs.`,
+    `${name}'s story collection starts here.`,
+  ];
+  const endings = published.length ? [
+    "Visit their profile for the full collection.",
+    "Find their published work in the journal.",
+    "There is a perspective here to spend some time with.",
+    "Their stories are part of an ongoing community conversation.",
+    "Open a story and see where it takes you.",
+    "Explore their work, one story at a time.",
+    "Join the discussion on their published stories.",
+    "A different voice for your next good read.",
+  ] : [
+    "No stories published yet.",
+    "Their first published story is still ahead.",
+    "Their collection is currently a blank page.",
+    "There are no published chapters just yet.",
+    "A profile at the beginning of its story.",
+    "Their public story collection is still taking shape.",
+    "An empty bookshelf, with room for a first story.",
+    "No published writing to explore just yet.",
+  ];
+  return `${introductions[seed % introductions.length]} ${endings[Math.floor(seed / introductions.length) % endings.length]}`;
+}
+
 export function writerReputation(stories) {
   const totals = stories.filter((story) => story.published !== false).reduce((result, story) => {
     const stats = story.community || {};

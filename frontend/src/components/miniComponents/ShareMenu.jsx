@@ -29,14 +29,31 @@ export default function ShareMenu({ open, onClose, title, url }) {
     return () => { document.body.style.overflow = previousOverflow; };
   }, [open, reducedMotion]);
 
-  async function copyLink(forInstagram = false) {
+  async function copyLink(platform = "") {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      setMessage(forInstagram ? "Link copied. Paste it into your Instagram message or story." : "Story link copied to clipboard.");
+      setMessage(platform ? `Link copied. Ready to share on ${platform}.` : "Story link copied to clipboard.");
+      return true;
     } catch {
+      setCopied(false);
       setMessage("Copying is unavailable. Select and copy the story link below.");
+      return false;
     }
+  }
+
+  async function shareToPlatform(event, platform) {
+    event.preventDefault();
+    const destination = event.currentTarget.href;
+    const popup = window.open("about:blank", "_blank");
+    if (popup) popup.opener = null;
+    const linkCopied = await copyLink(platform);
+    if (!linkCopied) {
+      popup?.close();
+      return;
+    }
+    if (popup && !popup.closed) popup.location.replace(destination);
+    else window.location.assign(destination);
   }
 
   function dismissBackdrop(event) {
@@ -50,9 +67,9 @@ export default function ShareMenu({ open, onClose, title, url }) {
     <h2 id="story-share-title">Share this story</h2>
     <p id="story-share-story">{title}</p>
     <div className="story-share-options">
-      <a href={linkedin.href} target="_blank" rel="noopener noreferrer"><FiLinkedin aria-hidden="true" /><span>LinkedIn<small>Share with your network</small></span></a>
-      <a href={twitter.href} target="_blank" rel="noopener noreferrer"><FiTwitter aria-hidden="true" /><span>Twitter / X<small>Post this perspective</small></span></a>
-      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" onClick={() => { void copyLink(true); }}><FiInstagram aria-hidden="true" /><span>Instagram<small>Copy link and open Instagram</small></span></a>
+      <a href={linkedin.href} target="_blank" rel="noopener noreferrer" onClick={(event) => { void shareToPlatform(event, "LinkedIn"); }}><FiLinkedin aria-hidden="true" /><span>LinkedIn<small>Copy link and open LinkedIn</small></span></a>
+      <a href={twitter.href} target="_blank" rel="noopener noreferrer" onClick={(event) => { void shareToPlatform(event, "Twitter / X"); }}><FiTwitter aria-hidden="true" /><span>Twitter / X<small>Copy link and open Twitter / X</small></span></a>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" onClick={(event) => { void shareToPlatform(event, "Instagram"); }}><FiInstagram aria-hidden="true" /><span>Instagram<small>Copy link and open Instagram</small></span></a>
       <button type="button" onClick={() => { void copyLink(); }}>{copied ? <FiCheck aria-hidden="true" /> : <FiCopy aria-hidden="true" />}<span>{copied ? "Link copied" : "Copy link"}<small>Copy to clipboard</small></span></button>
     </div>
     <label className="story-share-link"><span>Story link</span><input type="text" readOnly value={url} onFocus={(event) => event.target.select()} /></label>

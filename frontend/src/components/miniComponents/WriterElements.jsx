@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { FiArrowUp, FiArrowUpRight, FiBookOpen, FiCheck, FiChevronDown, FiStar, FiUsers } from "react-icons/fi";
+import { FiArrowUp, FiArrowUpRight, FiAward, FiBookOpen, FiCheck, FiChevronDown, FiMessageCircle, FiStar, FiUsers } from "react-icons/fi";
+import { writerBio } from "../../assets/useWriters";
 
 export function WriterSelect({ label, value, options, onChange }) {
   const [open, setOpen] = useState(false);
@@ -79,6 +80,22 @@ export function WriterAvatar({ author, large = false }) {
   return <span className={`writers-avatar${large ? " writers-avatar-large" : ""}`}>{url && failedUrl !== url ? <img src={url} alt="" loading={large ? "eager" : "lazy"} onError={() => setFailedUrl(url)} /> : <span aria-hidden="true">{initials}</span>}</span>;
 }
 WriterAvatar.propTypes = { author: PropTypes.object.isRequired, large: PropTypes.bool };
+
+export function WriterCard({ author, writing, topics, reputation, rank }) {
+  const profile = `/author/${author._id}`;
+  return <article className="writers-card" data-ranked={Boolean(rank)}>
+    <div className="writers-card-top"><span className="writers-card-label"><FiAward aria-hidden="true" />{rank ? `#${rank} in the community` : "Independent writer"}</span><span className="writers-card-score"><strong>{reputation.score}</strong> points</span></div>
+    <div className="writers-card-identity"><Link className="writers-card-avatar" to={profile} aria-label={`View ${author.name}'s profile`}><WriterAvatar author={author} /></Link><div><h3><Link to={profile}>{author.name}</Link></h3><p>{writerBio(author, writing)}</p></div></div>
+    <dl className="writers-card-metrics">
+      <div><dt><FiArrowUp aria-hidden="true" />Upvotes</dt><dd>{reputation.upvoteCount}</dd></div>
+      <div><dt><FiStar aria-hidden="true" />Rating ({reputation.ratingCount})</dt><dd>{reputation.ratingCount ? <>{reputation.averageRating.toFixed(1)}<small>/ 5</small></> : <span>Unrated</span>}</dd></div>
+      <div><dt><FiBookOpen aria-hidden="true" />Stories</dt><dd>{writing.length}</dd></div>
+    </dl>
+    <div className="writers-topic-tags" aria-label="Writing topics">{topics.length ? topics.slice(0, 3).map((topic) => <span key={topic}>{topic}</span>) : <span>New voice</span>}{topics.length > 3 && <span>+{topics.length - 3} more</span>}</div>
+    <div className="writers-card-bottom"><span className="writers-card-comments"><FiMessageCircle aria-hidden="true" />{reputation.commentCount} {reputation.commentCount === 1 ? "comment" : "comments"}</span><Link to={profile} className="text-link" aria-label={`Read more about ${author.name}`}>View profile <FiArrowUpRight aria-hidden="true" /></Link></div>
+  </article>;
+}
+WriterCard.propTypes = { author: PropTypes.object.isRequired, writing: PropTypes.array.isRequired, topics: PropTypes.array.isRequired, reputation: PropTypes.object.isRequired, rank: PropTypes.number };
 
 export function StoryEngagement({ community }) {
   const { upvoteCount = 0, averageRating = 0, ratingCount = 0 } = community || {};
