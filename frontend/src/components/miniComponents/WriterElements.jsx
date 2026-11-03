@@ -80,6 +80,12 @@ export function WriterAvatar({ author, large = false }) {
 }
 WriterAvatar.propTypes = { author: PropTypes.object.isRequired, large: PropTypes.bool };
 
+export function StoryEngagement({ community }) {
+  const { upvoteCount = 0, averageRating = 0, ratingCount = 0 } = community || {};
+  return <div className="story-engagement" aria-label="Story reactions"><span><FiArrowUp aria-hidden="true" />{upvoteCount} {upvoteCount === 1 ? "upvote" : "upvotes"}</span><span><FiStar aria-hidden="true" />{ratingCount ? `${averageRating.toFixed(1)} / 5 (${ratingCount})` : "Not rated yet"}</span></div>;
+}
+StoryEngagement.propTypes = { community: PropTypes.object };
+
 export function WritersState({ loading = false, error, retry, title, description }) {
   if (loading) return <div className="writers-loading" role="status" aria-label="Loading writers and stories"><span className="writers-loading-line" /><div className="writers-skeleton-grid">{[0, 1, 2].map((key) => <div key={key}><span /><i /><i /></div>)}</div><span className="writers-sr-only">Loading writers and stories...</span></div>;
   return <div className="writers-empty" role={error ? "alert" : undefined}><span className="writers-empty-icon"><FiUsers aria-hidden="true" /></span><h2>{title || "A brief pause in the conversation."}</h2><p>{error || description}</p>{error ? <button className="write-button" type="button" onClick={retry}>Try again</button> : <Link className="text-link" to="/blogs">Explore stories <FiArrowUpRight aria-hidden="true" /></Link>}</div>;

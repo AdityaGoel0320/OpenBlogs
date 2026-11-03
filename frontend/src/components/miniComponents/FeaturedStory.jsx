@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { Context } from "../../main";
+import { StoryEngagement } from "./WriterElements";
 
 function FeaturedStory() {
   const { blogs } = useContext(Context);
@@ -20,6 +21,7 @@ function FeaturedStory() {
       <h1>{blog.title}</h1>
       <p className="featured-intro">{blog.intro}</p>
       <span className="featured-byline"><img src={blog.authorAvatar} alt="" /><span>By <strong>{blog.authorName}</strong></span><span className="read-link">Read story <span aria-hidden="true">↗</span></span></span>
+      <StoryEngagement community={blog.community} />
     </div>
     <span className="featured-index" aria-hidden="true">01</span>
   </Link></section>;

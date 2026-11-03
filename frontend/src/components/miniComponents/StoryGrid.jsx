@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { Context } from "../../main";
+import { StoryEngagement } from "./WriterElements";
 
 function StoryGrid() {
   const { blogs = [] } = useContext(Context);
@@ -12,7 +13,7 @@ function StoryGrid() {
     </div>
     {stories.length ? <div className="story-grid">{stories.map((blog, index) => <Link to={`/blog/${blog._id}`} className="story-card" key={blog._id} style={{ "--story-order": index }}>
       <div className="story-image-wrap"><img className="story-image" src={blog.mainImage?.url} alt="" loading="lazy" /><span className="category-label">{blog.category}</span></div>
-      <div className="story-card-copy"><h3>{blog.title}</h3><p>{blog.intro}</p><div className="story-byline"><img src={blog.authorAvatar} alt="" loading="lazy" /><span>{blog.authorName}</span><span className="byline-dot" /><span>{Math.max(1, Math.ceil((blog.intro?.split(/\s+/).length || 0) / 200))} min read</span></div></div>
+      <div className="story-card-copy"><h3>{blog.title}</h3><p>{blog.intro}</p><div className="story-byline"><img src={blog.authorAvatar} alt="" loading="lazy" /><span>{blog.authorName}</span><span className="byline-dot" /><span>{Math.max(1, Math.ceil((blog.intro?.split(/\s+/).length || 0) / 200))} min read</span></div><StoryEngagement community={blog.community} /></div>
     </Link>)}</div> : <p className="empty-state">No published stories yet. Check back soon.</p>}
   </section>;
 }
